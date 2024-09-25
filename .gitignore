@@ -2,3 +2,8 @@
 
 river_map.pkl
 /river_data/*
+
+results/*
+
+# processed science files
+*.opc

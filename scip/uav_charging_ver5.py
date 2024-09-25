@@ -17,61 +17,85 @@ import argparse
 import time
 
 def main(input_data_fn, hotel_fn, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, result_fn):
-    """ Example usage: 
-            python uav_charging_ver4.py Fracking_25.ophs 22 3 2 28800 1800 5 5 1 Fracking_25_scival_N22_H3_D2_Tmax28800_Tch1800_UAVs5_kch5_kdis1.pkl
-
-            The results are stored as a pickle object in the 'results' directory, with the same filename as the input filename.
     """
-
-    #### User inputs ####
-    # input_data_fn = 'Fracking_25.ophs'
-    # N = 22 # number of vertices 
-    # H = 3 # number of hotels >=2
-    # D = 3 # number of trips
-    # Tmax = 28800 # [seconds] = 8 hrs Max tour length 
-    # T_CH = 1800 # [seconds] = 30 min Maximum flight time on full-charge 
-    # uav_s = 5 # speed of UAV [m/s]
-    # k_ch = 5
-    # k_dis = 1
-    # result_fn = 'Fracking_25_scival_N24_H1_D10_Tmax28800_Tch1800.pkl'
+    MIP planner script for planning UAV flight paths in the presence of multiple charging stations.
     
+    Parameters:
+    -----------
+    input_data_fn : str
+        Input data filename. The file should be present in the `../data/science_data` directory.
+    hotel_fn : str
+        Input hotel filename. The file should be present in the `../data/science_data` directory.
+    N : int
+        Number of vertices.
+    H : int
+        Number of hotels.
+    D : int
+        Number of trips.
+    T_Max : float
+        Maximum tour length in seconds (e.g., 28800 for 8 hours operations).
+    T_CH : float
+        Maximum flight time on full charge in seconds (e.g., 1800 for 30 minutes UAV flight).
+    uav_s : float
+        Speed of UAV in meters per second.
+    k_ch : float
+        Charging factor.
+    k_dis : float
+        Discharge factor.
+    timeout : float
+        Timeout value in seconds. Enter a negative value if an optimal solution without timeout is desired.
+    result_fn : str
+        Filename to store results in a pickle file. The file is stored in the 'results' directory.
+    
+    Example:
+    --------
+    python uav_charging_ver5.py Fracking_25.opc 22 3 2 28800 1800 5 1 1 results
+    """
+    
+    # Define filepaths
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    input_data_dir = os.path.join(current_dir,'data/science_data')
+    input_data_dir = os.path.join(current_dir,'../data/science_data')
     input_data_fp = os.path.join(input_data_dir, input_data_fn)
     hotel_fp = os.path.join(input_data_dir, hotel_fn)
 
-    # Formulate the result file path
-    results_dir = os.path.join(current_dir, 'results')
-    result_fp = os.path.join(results_dir, result_fn)
-    print(result_fp)
+    # Check if files exist
+    if not os.path.exists(input_data_fp):
+        raise FileNotFoundError(f"Input data file '{input_data_fp}' not found.")
+    if not os.path.exists(hotel_fp):
+        raise FileNotFoundError(f"Hotel file '{hotel_fp}' not found.")
 
+    # Formulate the result file path
+    results_dir = os.path.join(current_dir, '../results')
+    result_fp = os.path.join(results_dir, result_fn)
 
     # Start timing here
     start_time = time.time()
 
-    def read_data_file(input_data_fp):
-        with open(input_data_fp, 'r') as file:
-            """
-                location and score:  x y Si
-                    x	= x coordinate 
-                    y	= y coordinate
-                    Si	= score
+    def read_data_file(input_fp):
+        """
+        Reads input data file and extracts vertex locations and scores.
+        Assumes the file contains 'x y Si' data where:
+            x  = x coordinate
+            y  = y coordinate
+            Si = score
 
-                    the first line is the starting hotel
-                    the second line is the ending hotel
-                    the next "H" lines are the extra hotels
-                    the remaining lines (N) are the vertices
+        Returns:
+            location (list): List of (x, y) coordinates.
+            Si (list): List of corresponding scores.
+        """
+        if not os.path.exists(input_fp):
+            raise FileNotFoundError(f"Input file '{input_fp}' not found.")
 
-            """
-            # Extract location and score data
-            location = []
-            Si = []
+        location = []
+        Si = []
+
+        with open(input_fp, 'r') as file:
             next(file)  # Skip the first line (header)
             for line in file:
-                    values = list(map(float, line.split()))
-                    x, y, _Si = values[-3], values[-2], values[-1]  # Assuming the first two values are x and y, and third is Si
-                    location.append([x, y])
-                    Si.append(_Si)
+                values = list(map(float, line.split()))
+                x, y, score = values[-3], values[-2], values[-1]
+                location.append([x, y])
+                Si.append(score)
 
         return location, Si
 
@@ -82,9 +106,9 @@ def main(input_data_fn, hotel_fn, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, time
     c_pos = c_pos_hotel + c_pos
     Si = Si_hotel + Si
 
-    print(c_pos)
-    print(Si)
-
+    #print(c_pos)
+    #print(len(c_pos))
+    #print(Si)
 
     # Print the extracted values
     print(f"number of vertices is N: {N}")
@@ -93,8 +117,7 @@ def main(input_data_fn, hotel_fn, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, time
     print(f"maximum tour time T_Max: {T_Max}")
     print(f"Max flight time on full charge T_CH: {T_CH}")
     #print("Location  Data:", c_pos)
-    #print(len(c_pos))
-
+    
     # calculate the time of flight
     t = np.empty((H+N, H+N))
     print("calculate time of flight")
@@ -183,7 +206,6 @@ def main(input_data_fn, hotel_fn, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, time
     for j in range(H, H+N):
         m.addCons(scip.quicksum(x[i][j][d]  for d in range(0, D) for i in range(0, H)) <=1)     
 
-
     '''
     # 	Limit each trip to the max time allotted per trip (T_d)
     for d in range(0, D):
@@ -234,9 +256,8 @@ def main(input_data_fn, hotel_fn, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, time
     elapsed_time = end_time - start_time
     print(f"execution time: {elapsed_time} seconds")
 
-
     # Write the model to an LP file
-    m.writeProblem("output_model.lp")
+    #m.writeProblem("output_model.lp")
 
     def get_solution(timeout=None):
 
@@ -287,10 +308,10 @@ def main(input_data_fn, hotel_fn, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, time
         return transitions, halt_times, max_flight_times, flight_times, subtour_u, optimal_sol, optimal_value, gap, nconss, nvars
 
 
-    #### Print the solution ####
+    # Get the solution
     transitions, halt_times, max_flight_times, flight_times, subtour_u, optimal_sol, optimal_value, gap, nconss, nvars = get_solution(timeout)
 
-    # Save data objects to a file using pickle
+    # Store results in a pickle file
     score = Si
     with open(result_fp, 'wb') as file:
         pickle.dump(H, file)
@@ -315,19 +336,19 @@ def main(input_data_fn, hotel_fn, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, time
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='MIP planner script.')
+    parser = argparse.ArgumentParser(description='MIP planner script for planning UAV flight paths in the presence of multiple charging stations.')
 
-    parser.add_argument('input_data_fn', type=str, help='Input data filename. File must be present in the data/science_data directory with .ophs extension. e.g., Fracking_25_scival.ophs') 
-    parser.add_argument('hotel_fn', type=str, help='Hotel filename')
+    parser.add_argument('input_data_fn', type=str, help='Input data filename. File must be present in the `../data/science_data` directory. e.g., Fracking_25_scival.opc') 
+    parser.add_argument('hotel_fn', type=str, help='Input hotel filename. File must be present in the `../data/science_data` directory.')
     parser.add_argument('N', type=int, help='Number of vertices')
     parser.add_argument('H', type=int, help='Number of hotels')
     parser.add_argument('D', type=int, help='Number of trips')
-    parser.add_argument('T_Max', type=float, help='Total tour length in seconds (e.g., 28800 for 8 hours)')
-    parser.add_argument('T_CH', type=float, help='Maximum flight time on full-charge in seconds (e.g., 1800 for 30 minutes)')
+    parser.add_argument('T_Max', type=float, help='Total tour length in seconds (e.g., 28800 for 8 hours operations)')
+    parser.add_argument('T_CH', type=float, help='Maximum flight time on full-charge in seconds (e.g., 1800 for 30 minutes UAV flight)')
     parser.add_argument('uav_s', type=float, help='speed of UAV [m/s]')
     parser.add_argument('k_ch', type=float, help='charging factor')
     parser.add_argument('k_dis', type=float, help='discharge factor')
-    parser.add_argument('timeout', type=float, help='Timeout value in seconds. Enter negative # if optimal solution without timeout is desired.')
+    parser.add_argument('timeout', type=float, help='Timeout value in seconds. Enter negative # if no timeout is desired (i.e. try to find optimal solution).')
     parser.add_argument('result_fn', type=str, help='Name of the pickle object in which the results are to be stored.')
 
     args = parser.parse_args()

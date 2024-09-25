@@ -1,85 +1,93 @@
 import numpy as np
 from sklearn.cluster import KMeans
 import argparse
-
 import os
-
 import matplotlib.pyplot as plt
 
+
 def main(sci_fn, H, hotel_fn):
+    """
+    This script strategically places H hotels using K-Means clustering based on 
+    input data of vertex locations and scores.
+
+    Args:
+        sci_fn (str): Input science data filename (e.g., 'Fracking_25_scival.opc'). File must be in the data/science_data directory.
+        H (int): Number of hotels to place strategically.
+        hotel_fn (str): Output filename for hotel locations (e.g., 'strategic_hotels.txt'). File is written in the "data/science_data" directory.
+    """
+
+    # Define filepaths
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    input_data_dir = os.path.join(current_dir,'data/science_data')
+    sci_fp = os.path.join(input_data_dir, sci_fn)
+    hotel_fp = os.path.join(input_data_dir, hotel_fn)
+
+    def read_data_file(input_fp):
         """
+        Reads input data file and extracts vertex locations and scores.
+        Assumes the file contains 'x y Si' data where:
+            x  = x coordinate
+            y  = y coordinate
+            Si = score
+
+        Returns:
+            location (list): List of (x, y) coordinates.
+            Si (list): List of corresponding scores.
         """
-        #### User inputs ####
-        # sci_fn = 'Fracking_25_scival.ophs'
-        # H = 5 # Number of Hotels to place strategically
-        # 
-        ################
+        if not os.path.exists(input_fp):
+            raise FileNotFoundError(f"Input file '{input_fp}' not found.")
 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        input_data_dir = os.path.join(current_dir,'data/science_data')
-        sci_fp = os.path.join(input_data_dir, sci_fn)
-        hotel_fp = os.path.join(input_data_dir, hotel_fn)
+        location = []
+        Si = []
 
-        def read_data_file(input_fp):
-                with open(input_fp, 'r') as file:
-                        """
-                                location and score:  x y Si
-                                x	= x coordinate 
-                                y	= y coordinate
-                                Si	= score
+        with open(input_fp, 'r') as file:
+            next(file)  # Skip the first line (header)
+            for line in file:
+                values = list(map(float, line.split()))
+                x, y, score = values[-3], values[-2], values[-1]
+                location.append([x, y])
+                Si.append(score)
 
-                                the first line is the starting hotel
-                                the second line is the ending hotel
-                                the next "H" lines are the extra hotels
-                                the remaining lines (N) are the vertices
+        return location, Si
 
-                        """
-                        # Extract location and score data
-                        location = []
-                        Si = []
-                        next(file)  # Skip the first line (header)
-                        for line in file:
-                                values = list(map(float, line.split()))
-                                x, y, _Si = values[-3], values[-2], values[-1]  # Assuming the first two values are x and y, and third is Si
-                                location.append([x, y])
-                                Si.append(_Si)
+    # read in the input data 
+    c_pos, Si = read_data_file(sci_fp)
+    c_pos = np.array(c_pos)
 
-                return location, Si
+    # Apply K-means clustering
+    kmeans = KMeans(n_clusters=H, random_state=0).fit(c_pos)
 
-        # read in the input data 
-        c_pos, Si = read_data_file(sci_fp)
-        c_pos = np.array(c_pos)
+    # Get the cluster centers (strategic hotel locations)
+    strategic_points = kmeans.cluster_centers_
+    print("Strategically placed points:", strategic_points)
 
-        # Apply K-means clustering
-        kmeans = KMeans(n_clusters=H, random_state=0).fit(c_pos)
+    # Prepare data for saving: hotel locations and zeroed Si scores
+    hotel_Si = np.zeros(H,)
+    combined_array = np.column_stack((strategic_points, hotel_Si))
+    
+    # Save the strategic points to a tab-separated file
+    np.savetxt(hotel_fp, combined_array, delimiter='\t', header='x\ty\tSi', comments='')
 
-        # Get the cluster centers
-        strategic_points = kmeans.cluster_centers_
+    # Plot the original points
+    plt.scatter(c_pos[:, 0], c_pos[:, 1], c='blue', label='Original Points')
 
-        print("Strategically placed points:", strategic_points)
-
-        # Combine the arrays
-        hotel_Si = np.zeros(H,)
-        combined_array = np.column_stack((strategic_points, hotel_Si))
-        # Save the combined array to a tab-separated file
-        np.savetxt(hotel_fp, combined_array, delimiter='\t', header='x\ty\tSi', comments='')
-
-        # Plot the original points
+    # Plotting
+    to_plt = False
+    if to_plt is True:
         plt.scatter(c_pos[:, 0], c_pos[:, 1], c='blue', label='Original Points')
-
-        # Plot the strategically placed points
-        plt.scatter(strategic_points[:, 0], strategic_points[:, 1], c='red', label='Strategic Points', marker='x')
-
+        plt.scatter(strategic_points[:, 0], strategic_points[:, 1], c='red', marker='x', label='Strategic Points')
         plt.legend()
-        #plt.show()
+        plt.show()
 
 if __name__ == "__main__":
-        parser = argparse.ArgumentParser(description='Find strategic hotel locations with k-means.')
+    parser = argparse.ArgumentParser(description='Find strategic hotel locations using K-Means clustering.')
 
-        parser.add_argument('sci_fn', type=str, help='Input science data filename. File must be present in the data/science_data directory with .ophs extension. e.g., Fracking_25_scival.ophs') 
-        parser.add_argument('H', type=int, help='Number of hotels')
-        parser.add_argument('hotel_fn', type=str, help='File name where the resulting hotel data is stored. File is written in the data/science_data directory.')
+    parser.add_argument('sci_fn', type=str, 
+                        help='Input science data filename. Must be in the "data/science_data" directory. E.g., "Fracking_25_scival.opc".')
+    parser.add_argument('H', type=int, 
+                        help='Number of hotels to place strategically.')
+    parser.add_argument('hotel_fn', type=str, 
+                        help='Output filename for strategic hotel locations. File is written in the "data/science_data" directory.')
 
-        args = parser.parse_args()
-        
-        main(args.sci_fn, args.H, args.hotel_fn)
+    args = parser.parse_args()
+    main(args.sci_fn, args.H, args.hotel_fn)

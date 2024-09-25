@@ -62,7 +62,7 @@ def main(sci_raw_fn, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout):
 
     ################ Call the MIP planner script ################
     command = [
-        'python', f'uav_charging_ver{ver}.py',
+        'python', f'scip/uav_charging_ver{ver}.py',
         sci_fn, hotel_fn, str(N), str(H), str(D), str(T_Max), str(T_CH), str(uav_s), str(k_ch), str(k_dis), str(timeout), result_fn
     ]
     # Call the script and capture output in real-time
