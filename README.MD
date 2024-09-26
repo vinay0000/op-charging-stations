@@ -4,9 +4,12 @@
 
 `analysis_cases.py`
 
+Script to do batch processing on a several different cases (vary scenario parameters, science data, etc).
 
 `main_driver.py`
 
+Script that orchestrates the MIP planner flow. The input science data file is expected to be in the 'data' folder.
+The results are written as a pickle file in the 'results' folder.
 
 `make_hotels.py`
 
@@ -23,7 +26,7 @@ MIP planner script with SCIP solver for planning UAV flight paths in the presenc
 
 
 `print_results_ver3.py`
-Script to load results, print them, and plot if necessary.
+
+Script to load results, print them, and plot (Cartesian or geographic coordinates) if necessary.
 
 
-`print_results_MapVer.py`

@@ -258,7 +258,7 @@ def plot_on_map(H, N, D, c_pos, Si, transitions):
 
 def main(results_fn, cartesian_plot=True, map_plot=False):
     """
-    Main function to load results, print them, and plot if necessary.
+    Main function to load results, print them, and plot (Cartesian or geographic coordinates) if necessary.
     
     Parameters:
     -----------
