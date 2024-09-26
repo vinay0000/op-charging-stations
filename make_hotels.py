@@ -5,22 +5,15 @@ import os
 import matplotlib.pyplot as plt
 
 
-def main(sci_fn, H, hotel_fn):
+def main(vertex_data_fp, H, hotel_fp):
     """
-    This script strategically places H hotels using K-Means clustering based on 
-    input data of vertex locations and scores.
+    This script strategically places H hotels using K-Means clustering based on input data of vertex locations and scores.
 
     Args:
-        sci_fn (str): Input science data filename (e.g., 'Fracking_25_scival.opc'). File must be in the data/science_data directory.
+        vertex_data_fp (str): Absolute file path to the file containing the vertex data (i.e. list of vertices and their scores).
         H (int): Number of hotels to place strategically.
-        hotel_fn (str): Output filename for hotel locations (e.g., 'strategic_hotels.txt'). File is written in the "data/science_data" directory.
+        hotel_fp (str): Absolute file path where the results, i.e. strategic hotel locations are to be written.
     """
-
-    # Define filepaths
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    input_data_dir = os.path.join(current_dir,'data/science_data')
-    sci_fp = os.path.join(input_data_dir, sci_fn)
-    hotel_fp = os.path.join(input_data_dir, hotel_fn)
 
     def read_data_file(input_fp):
         """
@@ -29,6 +22,9 @@ def main(sci_fn, H, hotel_fn):
             x  = x coordinate
             y  = y coordinate
             Si = score
+
+        Args:
+            input_fp (str): Absolute path to the input file.
 
         Returns:
             location (list): List of (x, y) coordinates.
@@ -51,7 +47,7 @@ def main(sci_fn, H, hotel_fn):
         return location, Si
 
     # read in the input data 
-    c_pos, Si = read_data_file(sci_fp)
+    c_pos, Si = read_data_file(vertex_data_fp)
     c_pos = np.array(c_pos)
 
     # Apply K-means clustering
@@ -82,12 +78,12 @@ def main(sci_fn, H, hotel_fn):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Find strategic hotel locations using K-Means clustering.')
 
-    parser.add_argument('sci_fn', type=str, 
-                        help='Input science data filename. Must be in the "data/science_data" directory. E.g., "Fracking_25_scival.opc".')
+    parser.add_argument('vertex_data_fp', type=str, 
+                        help='Absolute file path to the file containing the vertex data (i.e. list of vertices and their scores).')
     parser.add_argument('H', type=int, 
                         help='Number of hotels to place strategically.')
-    parser.add_argument('hotel_fn', type=str, 
-                        help='Output filename for strategic hotel locations. File is written in the "data/science_data" directory.')
+    parser.add_argument('hotel_fp', type=str, 
+                        help='Absolute file path where the results, i.e. strategic hotel locations are to be written.')
 
     args = parser.parse_args()
-    main(args.sci_fn, args.H, args.hotel_fn)
+    main( args.vertex_data_fp, args.H, args.hotel_fp)

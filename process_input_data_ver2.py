@@ -4,34 +4,28 @@ import matplotlib.pyplot as plt
 import os
 import argparse
 
-def main(sci_raw_fn, result_fn):
+def main(sci_raw_data_fp, result_fp):
     """
     Processes a CSV file containing science data (from Molly/ George) and projects coordinates using a Lambert Conformal Conic projection.
+    The output is a file with lists of vertex locations and their corresponding scores.
     Saves the output as a tab-delimited file with projected coordinates and normalized yearly averages as scores.
 
     Example:
         python process_input_data_ver2.py Fracking_25_scival.csv Fracking_25_scival.opc
 
     Args:
-        sci_raw_fn (str): Name of the input CSV file (e.g., "Fracking_25_scival.csv"). File must be in the data/science_data directory.
-        result_fn (str): Name of the output file (e.g., "Fracking_25_scival.opc").
+        sci_raw_data_fp (str): Absolute path to the input science file.
+        result_fp (str): Abosulte path to the output file (e.g., "Fracking_25_scival.opc") containing the vertices and their scores.
 
     Notes:
         Input files must be located in the 'data/science_data' directory.
     """
-    # Define filepaths
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    sci_file_dir= 'data/science_data'
-
-    sci_raw_fp = os.path.join(sci_file_dir, sci_raw_fn)
-    result_fp = os.path.join(sci_file_dir, result_fn)
-
     # Check if input file exists
-    if not os.path.exists(sci_raw_fp):
-        raise FileNotFoundError(f"Input file '{sci_raw_fp}' not found.")
+    if not os.path.exists(sci_raw_data_fp):
+        raise FileNotFoundError(f"Input file '{sci_raw_data_fp}' not found.")
 
     # Read the CSV file into a pandas DataFrame
-    df = pd.read_csv(os.path.join(current_dir, sci_raw_fp))
+    df = pd.read_csv(sci_raw_data_fp)
 
     # Define Lambert Conformal Conic projection parameters (Texas)
     # TODO: Provide LCC parameters more appropriate to the input dataset
@@ -70,7 +64,6 @@ def main(sci_raw_fn, result_fn):
     # Save the output in a tab-delimited format
     selected_columns.to_csv(result_fp, header=True, mode='w', sep='\t', index=False)
 
-
     #### Plotting the points weighted by the scores ####
     to_plot = False
     if to_plot is True:
@@ -84,9 +77,9 @@ def main(sci_raw_fn, result_fn):
         plt.show()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Processes CSV science data file from scientists and generates a projected output file with targets and scores.')
-    parser.add_argument('sci_raw_fn', type=str, help='Raw science filename (e.g., "Fracking_25_scival.csv"). File must be in the data/science_data directory."') 
-    parser.add_argument('result_fn', type=str, help='Output filename (e.g., "Fracking_25_scival.opc")."') 
+    parser = argparse.ArgumentParser(description='Processes CSV science data file from scientists and generates a projected output file with vertices and their scores.')
+    parser.add_argument('sci_raw_data_fp', type=str, help='Absolute path to the input science file."') 
+    parser.add_argument('result_fp', type=str, help='Abosulte path to the output file (e.g., "Fracking_25_scival.opc") containing the vertices and their scores.') 
     args = parser.parse_args()
     
-    main(args.sci_raw_fn, args.result_fn)
+    main(args.sci_raw_data_fp, args.result_fp)

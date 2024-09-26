@@ -16,16 +16,16 @@ import pickle
 import argparse
 import time
 
-def main(input_data_fn, hotel_fn, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, result_fn):
+def main(vertex_data_fp, hotel_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, result_fp):
     """
     MIP planner script for planning UAV flight paths in the presence of multiple charging stations.
     
     Parameters:
     -----------
-    input_data_fn : str
-        Input data filename. The file should be present in the `../data/science_data` directory.
-    hotel_fn : str
-        Input hotel filename. The file should be present in the `../data/science_data` directory.
+    vertex_data_fp : str
+        Absolute file path to the file containing the vertex data (i.e. list of vertices and their scores).
+    hotel_fp : str
+        Absolute file path containing the strategic hotel locations.
     N : int
         Number of vertices.
     H : int
@@ -44,29 +44,13 @@ def main(input_data_fn, hotel_fn, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, time
         Discharge factor.
     timeout : float
         Timeout value in seconds. Enter a negative value if an optimal solution without timeout is desired.
-    result_fn : str
-        Filename to store results in a pickle file. The file is stored in the 'results' directory.
+    result_fp : str
+        Absolute file path where the results are to be stored as a pickle file.
     
     Example:
     --------
     python uav_charging_ver5.py Fracking_25.opc 22 3 2 28800 1800 5 1 1 results
     """
-    
-    # Define filepaths
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    input_data_dir = os.path.join(current_dir,'../data/science_data')
-    input_data_fp = os.path.join(input_data_dir, input_data_fn)
-    hotel_fp = os.path.join(input_data_dir, hotel_fn)
-
-    # Check if files exist
-    if not os.path.exists(input_data_fp):
-        raise FileNotFoundError(f"Input data file '{input_data_fp}' not found.")
-    if not os.path.exists(hotel_fp):
-        raise FileNotFoundError(f"Hotel file '{hotel_fp}' not found.")
-
-    # Formulate the result file path
-    results_dir = os.path.join(current_dir, '../results')
-    result_fp = os.path.join(results_dir, result_fn)
 
     # Start timing here
     start_time = time.time()
@@ -101,7 +85,7 @@ def main(input_data_fn, hotel_fn, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, time
 
     # read in the input data 
     c_pos_hotel, Si_hotel = read_data_file(hotel_fp)
-    c_pos, Si = read_data_file(input_data_fp)
+    c_pos, Si = read_data_file(vertex_data_fp)
 
     c_pos = c_pos_hotel + c_pos
     Si = Si_hotel + Si
@@ -338,8 +322,8 @@ def main(input_data_fn, hotel_fn, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, time
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='MIP planner script for planning UAV flight paths in the presence of multiple charging stations.')
 
-    parser.add_argument('input_data_fn', type=str, help='Input data filename. File must be present in the `../data/science_data` directory. e.g., Fracking_25_scival.opc') 
-    parser.add_argument('hotel_fn', type=str, help='Input hotel filename. File must be present in the `../data/science_data` directory.')
+    parser.add_argument('vertex_data_fp', type=str, help='Absolute file path to the file containing the vertex data (i.e. list of vertices and their scores).') 
+    parser.add_argument('hotel_fp', type=str, help='Absolute file path containing the strategic hotel locations.')
     parser.add_argument('N', type=int, help='Number of vertices')
     parser.add_argument('H', type=int, help='Number of hotels')
     parser.add_argument('D', type=int, help='Number of trips')
@@ -349,8 +333,8 @@ if __name__ == "__main__":
     parser.add_argument('k_ch', type=float, help='charging factor')
     parser.add_argument('k_dis', type=float, help='discharge factor')
     parser.add_argument('timeout', type=float, help='Timeout value in seconds. Enter negative # if no timeout is desired (i.e. try to find optimal solution).')
-    parser.add_argument('result_fn', type=str, help='Name of the pickle object in which the results are to be stored.')
+    parser.add_argument('result_fp', type=str, help='Absolute file path where the results are to be stored as a pickle file.')
 
     args = parser.parse_args()
     
-    main(args.input_data_fn, args.hotel_fn, args.N, args.H, args.D, args.T_Max, args.T_CH, args.uav_s, args.k_ch, args.k_dis, args.timeout, args.result_fn)
+    main(args.vertex_data_fp, args.hotel_fp, args.N, args.H, args.D, args.T_Max, args.T_CH, args.uav_s, args.k_ch, args.k_dis, args.timeout, args.result_fp)

@@ -28,5 +28,5 @@ MIP planner script with SCIP solver for planning UAV flight paths in the presenc
 `print_results_ver3.py`
 
 Script to load results, print them, and plot (Cartesian or geographic coordinates) if necessary.
-
+Plotting on geographic coordinates with a river map in the background requires the `river_data/river_map.pkl` file or corresponding shape files, which have not been synchornized with Github since the file size is large.
 

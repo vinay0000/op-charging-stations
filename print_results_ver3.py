@@ -10,27 +10,24 @@ import argparse
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-def load_results(results_fn):
+def load_results(mip_results_fp):
     """
     Load result data from a pickle file.
     
     Parameters:
     -----------
-    results_fn : str
-        The filename of the pickle file containing results.
+    mip_results_fp : str
+        Absolute file path to the pickle file which contains the results of the optimization.
     
     Returns:
     --------
     tuple : All loaded results from the pickle file.
     """
-    results_dir = os.path.join(current_dir, 'results')
-    results_fl = os.path.join(results_dir, results_fn)
-
     # Ensure file exists
-    if not os.path.exists(results_fl):
-        raise FileNotFoundError(f"Results file '{results_fl}' not found.")
+    if not os.path.exists(mip_results_fp):
+        raise FileNotFoundError(f"Results file '{mip_results_fp}' not found.")
     
-    with open(results_fl, 'rb') as file:
+    with open(mip_results_fp, 'rb') as file:
         H = pickle.load(file)
         N = pickle.load(file)
         D = pickle.load(file)
@@ -154,6 +151,9 @@ def plot_on_map(H, N, D, c_pos, Si, transitions):
     Plot results on a map using the Lambert Conformal Conic projection for Texas.
     This function plots the positions of hotels and vertices on a map, along with the 
     connections between them (transitions) for multiple trips.
+
+    Plotting on geographic coordinates with a river map in the background requires the `river_data/river_map.pkl` file 
+    or corresponding shape files.s
     """
 
     # Define the Lambert Conformal Conic projection parameters for Texas
@@ -188,7 +188,7 @@ def plot_on_map(H, N, D, c_pos, Si, transitions):
         pickle.dump(river_map, f)
     '''
     # Load the river map (GeoDataFrame) from the pickle file
-    with open('river_map.pkl', 'rb') as f:
+    with open('river_data/river_map.pkl', 'rb') as f:
         river_map = pickle.load(f)
         
     # Define the bounding box for the region of interest (xmin, ymin, xmax, ymax)
@@ -256,20 +256,23 @@ def plot_on_map(H, N, D, c_pos, Si, transitions):
     # Show the plot                 
     plt.show()
 
-def main(results_fn, cartesian_plot=True, map_plot=False):
+def main(mip_results_fp, cartesian_plot=True, map_plot=False):
     """
-    Main function to load results, print them, and plot (Cartesian or geographic coordinates) if necessary.
+    Main function to load results, print them, and plot (Cartesian or geographic coordinates) if directed.
+    
+    Plotting on geographic coordinates with a river map in the background requires the `river_data/river_map.pkl` file 
+    or corresponding shape files.
     
     Parameters:
     -----------
-    results_fn : str
-        Filename of the results pickle file.
+    mip_results_fp : str
+        Absolute filepath of the results pickle file.
     disable_plot : bool
         If True, plotting is disabled.
     """
     (H, N, D, T_Max, T_CH, c_pos, Si, score, transitions, halt_times, 
      max_flight_times, flight_times, subtour_u, optimal_value, gap, nconss, 
-     nvars, optimal_sol, process_time) = load_results(results_fn)
+     nvars, optimal_sol, process_time) = load_results(mip_results_fp)
 
     # Print results
     print_results(H, N, D, T_Max, T_CH, halt_times, max_flight_times, flight_times, c_pos,
@@ -286,10 +289,11 @@ def main(results_fn, cartesian_plot=True, map_plot=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Display results from a pickle object.')
 
-    parser.add_argument('results_fn', type=str, help='Results pickle file, e.g., "results.pkl". File must be in the "results" folder.')
+    parser.add_argument('mip_results_fp', type=str, 
+                        help='Absolute file path to the pickle file which contains the results of the optimization.')
     parser.add_argument('--cartesian_plot', action='store_true', help='Plot UAV route on a Cartesian map of rivers.')
     parser.add_argument('--map_plot', action='store_true', help='Plot UAV route on a geographic map of rivers.')
 
     args = parser.parse_args()
     
-    main(args.results_fn, args.cartesian_plot, args.map_plot)
+    main(args.mip_results_fp, args.cartesian_plot, args.map_plot)
