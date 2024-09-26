@@ -1,6 +1,8 @@
 """
  Divsalar, A., Vansteenwegen, P., & Cattrysse, D. (2013). A variable neighborhood search method for the orienteering problem 
     with hotel selection. International Journal of Production Economics, 145(1), 150-160.
+    
+    The previous name of this script was 'uav_charging_ver5.py'
 
     In ver-5, scores are assigned to nodes, and not to arcs. 
     In ver-5, like in ver-4 hotel-to-hotel transitions are given a Score = 0
