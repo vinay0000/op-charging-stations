@@ -47,8 +47,13 @@ def main(sci_raw_data_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, res
         result_folder_path (str): Absolute folder path where the results and intermediate execution files are to be written.
     """
     # MIP formulation version
+    mip_software = 'gurobi'
     ver = 5
-
+    if mip_software == 'scip':
+        mip_file = f'scip/scip_mip_ver{ver}.py'
+    elif mip_software == 'gurobi':
+        mip_file = f'gurobi/grb_mip_ver{ver}.py'
+    
     # Generate file paths (and names) based on input parameters
     vertex_data_fp = os.path.join(result_folder_path, f'vertex_data.opc')
     hotel_fp = os.path.join(result_folder_path, f'hotels_H{H}.opc')
@@ -68,7 +73,7 @@ def main(sci_raw_data_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, res
     # Step 3: Run the MIP planner script
     print("Running the MIP planner...")
     mip_command = [
-        'python', f'scip/uav_charging_ver{ver}.py',
+        'python', mip_file,
         vertex_data_fp, hotel_fp, str(N), str(H), str(D), str(T_Max), str(T_CH), 
         str(uav_s), str(k_ch), str(k_dis), str(timeout), mip_result_fp
     ]
@@ -76,7 +81,7 @@ def main(sci_raw_data_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, res
 
     # Step 4: Display the results
     print(f"Displaying the results from {mip_result_fp}...")
-    run_command(['python', 'print_results_ver3.py', '--cartesian_plot', mip_result_fp])
+    run_command(['python', 'print_results_ver3.py', '--map_plot', mip_result_fp])
 
 if __name__ == "__main__":
     # Command-line argument parser
