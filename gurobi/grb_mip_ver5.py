@@ -88,8 +88,8 @@ def main(vertex_data_fp, hotel_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, tim
     c_pos = c_pos_hotel + c_pos
     Si = Si_hotel + Si
 
-    #print(c_pos)
-    #print(len(c_pos))
+    print("c_pos: ", c_pos)
+    print(f'len(c_pos) is {len(c_pos)}')
     #print(Si)
 
     # Print the extracted values
@@ -111,15 +111,6 @@ def main(vertex_data_fp, hotel_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, tim
 
     ##### Create a new model #####
     m = gp.Model("opc5")
-
-    ##### Below settings are enabled to prevent SCIP from giving infesible solutio #####
-    # Disable presolving
-    #m.setParam('presolving/maxrounds', 0)  # Disables presolving rounds
-    ## Tighten feasibility tolerance
-    # https://stackoverflow.com/questions/22452332/obtain-best-feasible-solution-with-scip
-    #m.setParam('numerics/feastol', 1e-8)  # Default is 1e-6, use a smaller value for tighter feasibility. Change to 1e-10 if required.
-    #m.setEmphasis(3)  #  SCIP_PARAMEMPHASIS_FEASIBILITY https://www.scipopt.org/doc/html/type__paramset_8h_source.php 
-    #################################################################
 
     ##### Predefined variables #####
     # x_{i,j,d} is a binary variable that indicates whether edge (i,j) is traversed in trip d.
@@ -246,30 +237,55 @@ def main(vertex_data_fp, hotel_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, tim
         # Status checking
         solver_status = m.Status
 
-        # Check for infeasibility or unboundedness
+        # Check for infeasibility, unboundedness, or infeasibility/unboundedness ambiguity
         if solver_status in (GRB.INF_OR_UNBD, GRB.INFEASIBLE, GRB.UNBOUNDED):
             raise Exception("The model cannot be solved because it is infeasible or unbounded.")
 
         # Initialize optimal solution flag
         optimal_sol = 0
 
+        # Check for specific statuses
         if solver_status == GRB.OPTIMAL:
             optimal_sol = 1
         elif solver_status == GRB.TIME_LIMIT:
             print('Reached time limit, returning best feasible solution.')
+        elif solver_status == GRB.ITERATION_LIMIT:
+            print('Iteration limit reached, returning current best solution.')
+        elif solver_status == GRB.NODE_LIMIT:
+            print('Node limit reached, returning current best solution.')
+        elif solver_status == GRB.SUBOPTIMAL:
+            print('Suboptimal solution found due to limit or other interruption.')
+        elif solver_status == GRB.NUMERIC:
+            raise Exception("Solver stopped due to numerical issues.")
+        elif solver_status == GRB.INTERRUPTED:
+            raise Exception("Optimization was interrupted by the user.")
         else:
-            print(f"Optimization was stopped with status {solver_status}")
-            if (timeout < 0):
-                raise Exception("Optimal solution is requested but not found.")
-            else:
-                raise RuntimeError("Unsure how the program reached this line.")
+            # Catch-all for unexpected statuses
+            print(f"Optimization was stopped with unknown status {solver_status}")
+            raise RuntimeError("Unknown solver status encountered.")
+
+        # Additional handling if optimal solution is not found and timeout is used
+        if optimal_sol == 0 and timeout < 0:
+            raise Exception("Optimal solution is requested but not found.")
         
         m.printQuality()
         m.printStats()
 
         gap = m.getAttr("MIPGap")
-        nconss = m.getAttr("NumConstrs") # Retrieve number of (linear) constraints. TODO: Should we also check quadratic, SOS, general constraints? 
-        nvars = m.getAttr("NumVars") # Retrieve number of variables in the problems
+
+        # Retrieve the number of linear constraints
+        nconss = m.getAttr("NumConstrs")
+        print(f"Number of linear constraints: {nconss}")
+
+        # Retreive miscellaneous constraints (quadratic, SOS, general) and check that they are '0'
+        nmisc_conss = m.getAttr("NumQConstrs") + m.getAttr("NumSOS") + m.getAttr("NumGenConstrs")
+        
+        if nmisc_conss != 0:
+            raise RuntimeError("Unexpected constraints!")
+        
+        # Retrieve the total number of variables
+        nvars = m.getAttr("NumVars")
+        print(f"Number of variables: {nvars}")
 
         transitions = [[[round(x[i][j][d].X) for d in range(D)] for j in range(H+N)] for i in range(H+N)]
         halt_times = [float(t_H[d].X) for d in range(D)]
