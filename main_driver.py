@@ -81,7 +81,7 @@ def main(sci_raw_data_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, res
 
     # Step 4: Display the results
     print(f"Displaying the results from {mip_result_fp}...")
-    run_command(['python', 'print_results_ver3.py', '--map_plot', mip_result_fp])
+    run_command(['python', 'print_results_ver3.py', mip_result_fp]) # run_command(['python', 'print_results_ver3.py', '--cartesian_plot', mip_result_fp])
 
 if __name__ == "__main__":
     # Command-line argument parser

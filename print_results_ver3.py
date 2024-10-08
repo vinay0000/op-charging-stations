@@ -239,7 +239,6 @@ def plot_on_map(H, N, D, c_pos, Si, transitions):
     ]  # Colors for different trips
 
     for d in range(D):
-        print("Trip #", d)
         for i in range(H+N):
             for j in range(H+N):
                 if transitions[i][j][d] == 1:
@@ -256,7 +255,7 @@ def plot_on_map(H, N, D, c_pos, Si, transitions):
     # Show the plot                 
     plt.show()
 
-def main(mip_results_fp, cartesian_plot=True, map_plot=False):
+def main(mip_results_fp, cartesian_plot=False, map_plot=False):
     """
     Main function to load results, print them, and plot (Cartesian or geographic coordinates) if directed.
     
