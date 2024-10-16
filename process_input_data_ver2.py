@@ -8,7 +8,7 @@ def main(sci_raw_data_fp, result_fp):
     """
     Processes a CSV file containing science data (from Molly/ George) and projects coordinates using a Lambert Conformal Conic projection.
     The output is a file with lists of vertex locations and their corresponding scores.
-    Saves the output as a tab-delimited file with projected coordinates and normalized yearly averages as scores.
+    Saves the output as a tab-delimited file with projected coordinates and normalized values from the third column (column position = 2) as scores.
 
     Example:
         python process_input_data_ver2.py Fracking_25_scival.csv Fracking_25_scival.opc
@@ -54,10 +54,13 @@ def main(sci_raw_data_fp, result_fp):
     # Adjust the coordinates so that the minimum x and y values start at zero.    
     df['x'] = df['x'] - df['x'].min()
     df['y'] = df['y'] - df['y'].min()
-    
-    #  Select columns and normalize the 'yearly_avg' field as score Si
-    selected_columns = df[['x', 'y', 'yearly_avg']].rename(columns={
-    'yearly_avg': 'Si'
+
+    # Get column name by position
+    column_name = df.columns[2]  # Position 2   
+    print(f'Column {column_name} has been selected for scores.')    
+    #  Select columns and normalize the values as score Si
+    selected_columns = df[['x', 'y', column_name]].rename(columns={
+    column_name: 'Si'
     })
     selected_columns['Si'] = selected_columns['Si']/ selected_columns['Si'].max()
     
