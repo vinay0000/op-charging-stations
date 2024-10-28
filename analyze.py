@@ -1,12 +1,17 @@
 """ This script collects the results of execution of number of different scenarios and generates insights.
 """
-import os
+import os, shutil
 import pickle
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
-import shutil
+import matplotlib.pyplot as plt
+plt.rcParams.update({
+    'font.size': 10,           # Set font size to 10
+    'font.family': 'serif',    # Use serif fonts
+    'font.serif': ['Times New Roman']  # Set font to Times New Roman
+})
+figure_format = 'pdf'
 
 def create_directory(dir_name):
     # Check if the directory already exists
@@ -20,8 +25,8 @@ def create_directory(dir_name):
     print(f"Created new directory: {dir_name}")
 
 file_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(file_dir, f'data/science_data/') 
-result_dir = os.path.join(file_dir, f'results')
+#data_dir = os.path.join(file_dir, f'data/science_data/') 
+result_dir = os.path.join(file_dir, f'results_for_paper_set2')
 
 plot_dir = os.path.join(result_dir, f'plots')
 create_directory(plot_dir)
@@ -95,7 +100,6 @@ for sci_idx, science_case in enumerate(science_case_list):
     
     sci_case_name =  science_case[0]
     N = science_case[1]
-    sci_raw_data_fp = os.path.join(data_dir, f'{sci_case_name}.csv') # Absolute path to the raw science data file
     result_folder_path = os.path.join(result_dir, f'{sci_case_name}') # Absolute folder path where the results are to be written
 
     for D in D_range:
@@ -149,69 +153,75 @@ for sci_idx, science_case in enumerate(science_case_list):
 unique_cases = df['science_case'].unique()
 
 for case in unique_cases:
+
     case_df = df[df['science_case'] == case]
 
-    # Crate a plot of the histogram of the science scores
-    # the Scores ('Si') for a given science case is fixed.
-    score = case_df['Si'].iloc[0]
-    plt.hist(score, bins=30, edgecolor='black', alpha=0.7)
-    plt.title(f'Histogram of Scores for science case {case}')
-    plt.xlabel('Scores')
-    plt.ylabel('Frequency')
+    if 'Bioassessment' in case:
+        case_label = 'Bioassessment'
+    elif 'Fracking' in case:
+        case_label = 'Fracking'
+    elif 'Plume' in case:
+        case_label = 'Low flow estimation'
+    elif 'RivNetworkContinuity' in case:
+        case_label = 'River network continuity'
+    else:
+        raise RuntimeError(f'Unknown case {case}')
 
-    plot_fp = os.path.join(plot_dir, f'{case}_scores.png')
-    plt.savefig(plot_fp)  # Save the plot as a PNG file
-    plt.close()
-
+    plt.figure(figsize=(4, 3))
     
     # Create a plot for each unique value of H
     for h_value in case_df['H'].unique():
         h_df = case_df[case_df['H'] == h_value]
         plt.plot(h_df['D'], h_df['optimal_value'], marker='o', label=f'H={h_value}')
     
-    plt.title(f'Optimal Value vs D for {case}')
+    plt.title(f'{case_label}')
     plt.xlabel('D (Number of Trips)')
     plt.ylabel('Optimal Value')
     plt.legend()
     plt.grid()
-    
-    plot_fp = os.path.join(plot_dir, f'{case}_optimal_value_vs_D.png')
-    plt.savefig(plot_fp)  # Save the plot as a PNG file
+    plt.tight_layout() # Adjust layout to prevent cutting off labels
+
+    plot_fp = os.path.join(plot_dir, f'{case}_optimal_value_vs_D.{figure_format}')
+    plt.savefig(plot_fp, format=figure_format)
     plt.close()
 
     # Create a plot for the sum of halt_times vs D
+    plt.figure(figsize=(4, 3))
     for h_value in case_df['H'].unique():
         h_df = case_df[case_df['H'] == h_value]
         # Sum the arrays in halt_times for each row and store the results
         halt_time_sums = 1/60 * h_df['halt_times'].apply(lambda x: np.sum(x))  # Sum each array
         plt.plot(h_df['D'], halt_time_sums, label=f'H={h_value}', marker='x')
     
-    plt.title(f'Total Charging Time vs D for {case}')
+    plt.title(f'{case_label}')
     plt.xlabel('D (Number of Trips)')
     plt.ylabel('Total Charging Time [minutes]')
     plt.legend()
     plt.grid()
-    
-    plot_fp = os.path.join(plot_dir, f'{case}_charging_time_vs_D.png')
-    plt.savefig(plot_fp)  # Save the plot as a PNG file
+    plt.tight_layout() # Adjust layout to prevent cutting off labels
+
+    plot_fp = os.path.join(plot_dir, f'{case}_charging_time_vs_D.{figure_format}')
+    plt.savefig(plot_fp, format=figure_format)
     plt.close()
 
 
     # Create a plot for the total tour time vs D
+    plt.figure(figsize=(4, 3))
     for h_value in case_df['H'].unique():
         h_df = case_df[case_df['H'] == h_value]
         # Sum the arrays in halt_times for each row and store the results
         tour_time = 1/60 * (h_df['flight_times'].apply(lambda x: np.sum(x)) +  h_df['halt_times'].apply(lambda x: np.sum(x)))  # Sum each array
         plt.plot(h_df['D'], tour_time, label=f'H={h_value}', marker='x')  # Use scatter for clearer visualization
     
-    plt.title(f'Tour Time vs D for {case}')
+    plt.title(f'{case_label}')
     plt.xlabel('D (Number of Trips)')
     plt.ylabel('Tour Time [minutes]')
     plt.legend()
     plt.grid()
-    
-    plot_fp = os.path.join(plot_dir, f'{case}_tour_time_vs_D.png')
-    plt.savefig(plot_fp)  # Save the plot as a PNG file
+    plt.tight_layout() # Adjust layout to prevent cutting off labels
+
+    plot_fp = os.path.join(plot_dir, f'{case}_tour_time_vs_D.{figure_format}')
+    plt.savefig(plot_fp, format=figure_format)
     plt.close()
 
 
@@ -250,7 +260,6 @@ for sci_idx, science_case in enumerate(science_case_list):
     
     sci_case_name =  science_case[0]
     N = science_case[1]
-    sci_raw_data_fp = os.path.join(data_dir, f'{sci_case_name}.csv') # Absolute path to the raw science data file
     result_folder_path = os.path.join(result_dir, f'{sci_case_name}') # Absolute folder path where the results are to be written
 
     for D in D_range:
