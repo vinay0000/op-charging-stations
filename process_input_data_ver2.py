@@ -56,7 +56,7 @@ def main(sci_raw_data_fp, result_fp):
     df['y'] = df['y'] - df['y'].min()
 
     # Get column name by position
-    column_name = df.columns[2]  # Position 2   
+    column_name = df.columns[4]
     print(f'Column {column_name} has been selected for scores.')    
     #  Select columns and normalize the values as score Si
     selected_columns = df[['x', 'y', column_name]].rename(columns={
