@@ -26,7 +26,7 @@ def create_directory(dir_name):
 
 file_dir = os.path.dirname(os.path.abspath(__file__))
 #data_dir = os.path.join(file_dir, f'data/science_data/') 
-result_dir = os.path.join(file_dir, f'results_for_paper_set2')
+result_dir = os.path.join(file_dir, f'results')
 
 plot_dir = os.path.join(result_dir, f'plots')
 create_directory(plot_dir)
@@ -90,7 +90,7 @@ science_case_list = [('Bioassessment_24_scival', 24), ('Bioassessment_50_scival'
                         ('RivNetworkContinuity_24_scival',24), ('RivNetworkContinuity_50_scival',50), ('RivNetworkContinuity_103_scival',103)]
 
 
-D_range = range(1,14) # number of trips
+D_range = range(1,20) # number of trips
 H_range = range(2,5) # number of hotels
 
 
@@ -167,20 +167,47 @@ for case in unique_cases:
     else:
         raise RuntimeError(f'Unknown case {case}')
 
-    plt.figure(figsize=(4, 3))
-    
+    fig, ax1 = plt.subplots(figsize=(4.5, 3.5))
+    ax2 = ax1.twinx()
+
     # Create a plot for each unique value of H
     for h_value in case_df['H'].unique():
         h_df = case_df[case_df['H'] == h_value]
-        plt.plot(h_df['D'], h_df['optimal_value'], marker='o', label=f'H={h_value}')
+         # Plot optimal values on the primary y-axis (left)
+        ax1.plot(h_df['D'], h_df['optimal_value'], marker='o', markersize=3, label=f'H={h_value}')
+        
+        # Plot process time on the secondary y-axis (right)
+        ax2.plot(h_df['D'], h_df['process_time']/60, '--', marker='x', markersize=4, label=f'Process Time (H={h_value})')
+            
+    # Label axes and title
+    #ax1.set_title(f'{case_label}')
+    sum_of_scores = sum(np.array(h_df['Si'].iloc[0]))
+    ax1.axhline(y=sum_of_scores, color='r', linestyle='-', linewidth=1) # Add a horizontal line at the maximum possible Score
+    ax1.text(x=0.5, y=sum_of_scores - 1,  # Position slightly below the line
+         s=f'{sum_of_scores:.2f}',  # Text content
+         color='r', fontsize=10, ha='center', va='bottom', 
+         transform=ax1.get_yaxis_transform())  # Relative to y-axis position
     
-    plt.title(f'{case_label}')
-    plt.xlabel('D (Number of Trips)')
-    plt.ylabel('Optimal Value')
-    plt.legend()
-    plt.grid()
-    plt.tight_layout() # Adjust layout to prevent cutting off labels
+    ax1.set_xlabel('D (Number of Trips)')
+    ax1.set_ylabel('Optimal Value')
+    ax2.set_ylabel('Process Time [minutes]')
 
+    # Adjust tick color for clarity
+    ax1.tick_params(axis="y")
+    ax2.tick_params(axis="y")
+
+    # Handle legends for each axis separately
+    lines_1, labels_1 = ax1.get_legend_handles_labels()
+    lines_2, labels_2 = ax2.get_legend_handles_labels()
+    # ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left')
+    ax1.legend(lines_1, labels_1, loc='upper left')
+
+
+    # Set grid and layout adjustments
+    plt.grid(True)
+    plt.tight_layout()  # Adjust layout to prevent cutting off labels
+
+    # Save the plot
     plot_fp = os.path.join(plot_dir, f'{case}_optimal_value_vs_D.{figure_format}')
     plt.savefig(plot_fp, format=figure_format)
     plt.close()
@@ -193,7 +220,7 @@ for case in unique_cases:
         halt_time_sums = 1/60 * h_df['halt_times'].apply(lambda x: np.sum(x))  # Sum each array
         plt.plot(h_df['D'], halt_time_sums, label=f'H={h_value}', marker='x')
     
-    plt.title(f'{case_label}')
+    #plt.title(f'{case_label}')
     plt.xlabel('D (Number of Trips)')
     plt.ylabel('Total Charging Time [minutes]')
     plt.legend()
@@ -204,7 +231,6 @@ for case in unique_cases:
     plt.savefig(plot_fp, format=figure_format)
     plt.close()
 
-
     # Create a plot for the total tour time vs D
     plt.figure(figsize=(4, 3))
     for h_value in case_df['H'].unique():
@@ -213,7 +239,13 @@ for case in unique_cases:
         tour_time = 1/60 * (h_df['flight_times'].apply(lambda x: np.sum(x)) +  h_df['halt_times'].apply(lambda x: np.sum(x)))  # Sum each array
         plt.plot(h_df['D'], tour_time, label=f'H={h_value}', marker='x')  # Use scatter for clearer visualization
     
-    plt.title(f'{case_label}')
+    max_tour_time = h_df['T_Max'].iloc[0]/60 # maximum tour time in minutes
+    plt.axhline(y=max_tour_time, color='r', linestyle='--', linewidth=1) # Add a horizontal line at maximum possible tour time
+    plt.text(x=2, y=max_tour_time-35,  # Position below line
+            s=f'{max_tour_time:.0f} mins',  # Text content
+            color='r', fontsize=10, ha='center', va='bottom')  # Anchor relative to axis
+    
+    #plt.title(f'{case_label}')
     plt.xlabel('D (Number of Trips)')
     plt.ylabel('Tour Time [minutes]')
     plt.legend()

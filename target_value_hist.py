@@ -66,8 +66,9 @@ for sci_idx, (sci_case_name, N, science_case_label) in enumerate(science_case_li
 
     plt.figure(figsize=(4, 3))
     plt.hist(Si, bins=30, edgecolor='black', alpha=0.7)
+    plt.text(0.05, 0.8, f'Sum(Scores) = {sum(Si):.2f}', transform=plt.gca().transAxes, fontsize=10, color='black')
 
-    plt.title(f'{science_case_label}')
+    #plt.title(f'{science_case_label}')
     plt.xlim(0,1)
     plt.xlabel('Score')
     plt.ylabel('Frequency')
