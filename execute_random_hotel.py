@@ -34,7 +34,7 @@ result_dir = os.path.join(file_dir, f'results_random_hotel/random_uniform')
 
 #### Define nominal parameter values ####
 #science_case_list = [ ('Bioassessment_24_scival',24), ('Fracking_24_scival',24), ('Plume_24_scival',24), ('RivNetworkContinuity_24_scival',24)                        ]
-sci_case_name = 'Bioassessment_24_scival'
+sci_case_name = 'Plume_24_scival'
 N = 24
 H = 3
 D = 4
@@ -50,7 +50,7 @@ sci_raw_data_fp = os.path.join(data_dir, f'{sci_case_name}.csv') # Absolute path
 result_parent_folder_path = os.path.join(result_dir, f'{sci_case_name}')
 create_directory_if_not_exists(result_parent_folder_path)
 
-num_of_iterations = 250
+num_of_iterations = 300
 
 print(f'Science case: {sci_case_name}')
 print(f'Case: # Hotels H = {H}, # Trips D = {D}')
