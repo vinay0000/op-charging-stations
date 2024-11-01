@@ -57,7 +57,7 @@ def main(sci_raw_data_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, res
 
     # Step 4: Display the results
     print(f"Displaying the results from {mip_result_fp}...")
-    utils.run_script(['python', 'print_results.py', mip_result_fp]) # utils.run_script(['python', 'print_results.py', '--cartesian_plot', mip_result_fp])
+    utils.run_script(['python', 'print_results.py', mip_result_fp])
 
 if __name__ == "__main__":
     # Command-line argument parser

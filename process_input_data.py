@@ -8,18 +8,16 @@ def main(sci_raw_data_fp, result_fp, score_col_num=3):
     """
     Processes a CSV file containing science data (from Molly/ George) and projects coordinates using a Lambert Conformal Conic projection.
     The output is a file with lists of vertex locations and their corresponding scores.
-    Saves the output as a tab-delimited file with projected coordinates and normalized values from the third column (column position = 2) as scores.
+    Saves the output as a tab-delimited file with projected coordinates and normalized values from the column (column position = score_col_num) as scores.
 
     Example:
         python process_input_data_ver2.py Fracking_25_scival.csv Fracking_25_scival.opc
 
     Args:
         sci_raw_data_fp (str): Absolute path to the input science file.
-        result_fp (str): Abosulte path to the output file (e.g., "Fracking_25_scival.opc") containing the vertices and their scores.
+        result_fp (str): Absolute path to the output file (e.g., "Fracking_25_scival.opc") containing the vertices and their scores.
         score_col_num (int): Column number of the data file which is to be considered for score calculation
 
-    Notes:
-        Input files must be located in the 'data/science_data' directory.
     """
     # Check if input file exists
     if not os.path.exists(sci_raw_data_fp):
@@ -52,11 +50,15 @@ def main(sci_raw_data_fp, result_fp, score_col_num=3):
     # Apply the projection function to each row
     df[['x', 'y']] = df.apply(project_coords, axis=1)
 
-    # Adjust the coordinates so that the minimum x and y values start at zero.    
-    print("df['x'].min(): ", df['x'].min())
-    print("df['y'].min(): ", df['y'].min())
-    df['x'] = df['x'] - df['x'].min()
-    df['y'] = df['y'] - df['y'].min()
+    # Adjust the coordinates so that the minimum x and y values start at zero.
+    x_center_min = df['x'].min()
+    y_center_min = df['y'].min()
+    
+    print(f'x_center_min: {x_center_min}')
+    print(f'y_center_min: {y_center_min}')
+    
+    df['x'] = df['x'] - x_center_min
+    df['y'] = df['y'] - y_center_min
 
     # Get column name by position
     column_name = df.columns[score_col_num]

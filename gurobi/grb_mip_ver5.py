@@ -14,7 +14,19 @@ import pickle
 import argparse
 import time
 
-import utils
+import importlib.util
+
+import importlib.util
+import os
+
+# Define the path to the file one level up
+current_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(current_dir, "../utils.py")
+
+# Create a module specification from the file path
+spec = importlib.util.spec_from_file_location("utils", file_path)
+utils = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(utils)
 
 def main(vertex_data_fp, hotel_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, result_fp):
     """
