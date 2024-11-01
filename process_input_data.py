@@ -85,7 +85,7 @@ def main(sci_raw_data_fp, result_fp, score_col_num=3):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Processes CSV science data file from scientists and generates a projected output file with vertices and their scores.')
     parser.add_argument('sci_raw_data_fp', type=str, help='Absolute path to the input science file."') 
-    parser.add_argument('result_fp', type=str, help='Abosulte path to the output file (e.g., "Fracking_25_scival.opc") containing the vertices and their scores.') 
+    parser.add_argument('result_fp', type=str, help='Absolute path to the output file (e.g., "Fracking_25_scival.opc") containing the vertices and their scores.') 
     args = parser.parse_args()
     
     main(args.sci_raw_data_fp, args.result_fp)

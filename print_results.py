@@ -141,7 +141,7 @@ def plot_on_map(H, N, D, c_pos, Si, transitions):
     # Below snippet is to be executed if the river_map.pkl file is not present.
     # Load the river map shapefile
     river_map = gpd.read_file(os.path.join(current_dir, 'river_data/pfaf_07_riv3sMERIT_sort/pfaf_07_riv_3sMERIT_sort.shp'))
-
+    
     # Save the GeoDataFrame to a pickle file
     with open('river_map.pkl', 'wb') as f:
         pickle.dump(river_map, f)
