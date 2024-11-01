@@ -2,31 +2,7 @@ import subprocess
 import argparse
 import os
 
-# Helper function to run subprocess commands and handle outputs
-def run_command(command):
-    """
-    Runs a subprocess command and streams the output in real-time.
-    Args:
-        command (list): The command to execute as a list of strings.
-    """
-    try:
-        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
-            # Stream the command output in real-time
-            for stdout_line in iter(process.stdout.readline, ''):
-                print(stdout_line, end='') # Print each line of output as it is received
-            for stderr_line in iter(process.stderr.readline, ''):
-                print(stderr_line, end='') # Print each line of error as it is received
-            
-            # Ensure the subprocess has finished
-            process.stdout.close()
-            process.stderr.close()
-            process.wait()
-
-            # Check if the process exited with an error
-            if process.returncode != 0:
-                raise subprocess.CalledProcessError(process.returncode, command)
-    except subprocess.CalledProcessError as e:
-        print(f"Error: Command {e.cmd} failed with return code {e.returncode}")
+import utils
 
 def main(sci_raw_data_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, result_folder_path):
     """
@@ -64,11 +40,11 @@ def main(sci_raw_data_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, res
     # Step 1: Run the data preprocessing script
     print(f"Running data preprocessing for {sci_raw_data_fp}...")
     
-    run_command(['python', 'process_input_data_ver2.py', sci_raw_data_fp, vertex_data_fp])
+    utils.run_script(['python', 'process_input_data_ver2.py', sci_raw_data_fp, vertex_data_fp])
 
     # Step 2: Run the make_hotels script
     print(f"Generating hotel data for {H} hotels...")
-    run_command(['python', 'make_hotels.py', vertex_data_fp, str(H), hotel_fp])
+    utils.run_script(['python', 'make_hotels.py', vertex_data_fp, str(H), hotel_fp])
 
     # Step 3: Run the MIP planner script
     print("Running the MIP planner...")
@@ -77,11 +53,11 @@ def main(sci_raw_data_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, res
         vertex_data_fp, hotel_fp, str(N), str(H), str(D), str(T_Max), str(T_CH), 
         str(uav_s), str(k_ch), str(k_dis), str(timeout), mip_result_fp
     ]
-    run_command(mip_command)
+    utils.run_script(mip_command)
 
     # Step 4: Display the results
     print(f"Displaying the results from {mip_result_fp}...")
-    run_command(['python', 'print_results_ver3.py', mip_result_fp]) # run_command(['python', 'print_results_ver3.py', '--cartesian_plot', mip_result_fp])
+    utils.run_script(['python', 'print_results_ver3.py', mip_result_fp]) # utils.run_script(['python', 'print_results_ver3.py', '--cartesian_plot', mip_result_fp])
 
 if __name__ == "__main__":
     # Command-line argument parser

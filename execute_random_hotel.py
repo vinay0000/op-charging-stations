@@ -9,6 +9,8 @@ import os
 import pickle
 import numpy as np
 
+import utils
+
 def create_directory_if_not_exists(directory_path):
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
@@ -16,30 +18,6 @@ def create_directory_if_not_exists(directory_path):
     else:
         print(f"Directory '{directory_path}' already exists.")
 
-def run_script(command):
-    """
-    Executes a subprocess command and streams output in real-time.
-
-    Args:
-        command (list): The command to execute as a list of strings.
-    """
-    try:
-        # Run the script and stream output in real-time
-        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
-            for stdout_line in iter(process.stdout.readline, ''):
-                print(stdout_line, end='')  # Stream standard output
-            for stderr_line in iter(process.stderr.readline, ''):
-                print(stderr_line, end='')  # Stream error output
-
-            process.stdout.close()
-            process.stderr.close()
-            process.wait()
-
-            if process.returncode != 0:
-                raise subprocess.CalledProcessError(process.returncode, command)
-
-    except subprocess.CalledProcessError as e:
-        print(f"Error: Command {e.cmd} failed with return code {e.returncode}")
 
 def script_call(sci_raw_data_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, result_folder_path):
     command = [
@@ -48,7 +26,7 @@ def script_call(sci_raw_data_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeo
         str(uav_s), str(k_ch), str(k_dis), str(timeout), str(result_folder_path)
     ]
     print(f"Executing command: {' '.join(command)}")
-    run_script(command)
+    utils.run_script(command)
 
 file_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(file_dir, f'data/science_data/') 

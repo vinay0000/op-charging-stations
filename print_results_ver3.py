@@ -8,50 +8,9 @@ import os
 import sys
 import argparse
 
+import utils
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
-
-def load_results(mip_results_fp):
-    """
-    Load result data from a pickle file.
-    
-    Parameters:
-    -----------
-    mip_results_fp : str
-        Absolute file path to the pickle file which contains the results of the optimization.
-    
-    Returns:
-    --------
-    tuple : All loaded results from the pickle file.
-    """
-    # Ensure file exists
-    if not os.path.exists(mip_results_fp):
-        raise FileNotFoundError(f"Results file '{mip_results_fp}' not found.")
-    
-    with open(mip_results_fp, 'rb') as file:
-        H = pickle.load(file)
-        N = pickle.load(file)
-        D = pickle.load(file)
-        T_Max = pickle.load(file)
-        T_CH = pickle.load(file)
-        c_pos = pickle.load(file)
-        Si = pickle.load(file)
-        score = pickle.load(file)
-        transitions = pickle.load(file)
-        halt_times = pickle.load(file)
-        max_flight_times = pickle.load(file)
-        flight_times = pickle.load(file)
-        subtour_u = pickle.load(file)
-        subtour_u = np.array(subtour_u) - min(np.array(subtour_u))
-        optimal_value = pickle.load(file)
-        gap = pickle.load(file)
-        nconss = pickle.load(file)
-        nvars = pickle.load(file)
-        optimal_sol = pickle.load(file)
-        process_time = pickle.load(file)
-
-    return (H, N, D, T_Max, T_CH, c_pos, Si, score, transitions, halt_times, 
-            max_flight_times, flight_times, subtour_u, optimal_value, gap, 
-            nconss, nvars, optimal_sol, process_time)
 
 def print_results(H, N, D, T_Max, T_CH, halt_times, max_flight_times, 
                   flight_times, c_pos, transitions, subtour_u, optimal_sol, gap, optimal_value, 
@@ -271,7 +230,7 @@ def main(mip_results_fp, cartesian_plot=False, map_plot=False):
     """
     (H, N, D, T_Max, T_CH, c_pos, Si, score, transitions, halt_times, 
      max_flight_times, flight_times, subtour_u, optimal_value, gap, nconss, 
-     nvars, optimal_sol, process_time) = load_results(mip_results_fp)
+     nvars, optimal_sol, process_time) = utils.load_results(mip_results_fp)
 
     # Print results
     print_results(H, N, D, T_Max, T_CH, halt_times, max_flight_times, flight_times, c_pos,

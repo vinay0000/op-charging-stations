@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 import argparse
 
-def main(sci_raw_data_fp, result_fp):
+def main(sci_raw_data_fp, result_fp, score_col_num=3):
     """
     Processes a CSV file containing science data (from Molly/ George) and projects coordinates using a Lambert Conformal Conic projection.
     The output is a file with lists of vertex locations and their corresponding scores.
@@ -16,6 +16,7 @@ def main(sci_raw_data_fp, result_fp):
     Args:
         sci_raw_data_fp (str): Absolute path to the input science file.
         result_fp (str): Abosulte path to the output file (e.g., "Fracking_25_scival.opc") containing the vertices and their scores.
+        score_col_num (int): Column number of the data file which is to be considered for score calculation
 
     Notes:
         Input files must be located in the 'data/science_data' directory.
@@ -52,11 +53,13 @@ def main(sci_raw_data_fp, result_fp):
     df[['x', 'y']] = df.apply(project_coords, axis=1)
 
     # Adjust the coordinates so that the minimum x and y values start at zero.    
+    print("df['x'].min(): ", df['x'].min())
+    print("df['y'].min(): ", df['y'].min())
     df['x'] = df['x'] - df['x'].min()
     df['y'] = df['y'] - df['y'].min()
 
     # Get column name by position
-    column_name = df.columns[3]
+    column_name = df.columns[score_col_num]
     print(f'Column {column_name} has been selected for scores.')    
     #  Select columns and normalize the values as score Si
     selected_columns = df[['x', 'y', column_name]].rename(columns={

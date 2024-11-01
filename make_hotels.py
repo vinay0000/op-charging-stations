@@ -4,6 +4,7 @@ import argparse
 import os
 import matplotlib.pyplot as plt
 
+import utils
 
 def main(vertex_data_fp, H, hotel_fp, algo='kmeans', random_state=0):
     """
@@ -17,39 +18,10 @@ def main(vertex_data_fp, H, hotel_fp, algo='kmeans', random_state=0):
         random_state (int or None): Integer to control the seeding to the kmeans algorithm. When an integer value is supplied, it allows for deterministic results from the k-means.
     """
 
-    def read_data_file(input_fp):
-        """
-        Reads input data file and extracts vertex locations and scores.
-        Assumes the file contains 'x y Si' data where:
-            x  = x coordinate
-            y  = y coordinate
-            Si = score
 
-        Args:
-            input_fp (str): Absolute path to the input file.
-
-        Returns:
-            location (list): List of (x, y) coordinates.
-            Si (list): List of corresponding scores.
-        """
-        if not os.path.exists(input_fp):
-            raise FileNotFoundError(f"Input file '{input_fp}' not found.")
-
-        location = []
-        Si = []
-
-        with open(input_fp, 'r') as file:
-            next(file)  # Skip the first line (header)
-            for line in file:
-                values = list(map(float, line.split()))
-                x, y, score = values[-3], values[-2], values[-1]
-                location.append([x, y])
-                Si.append(score)
-
-        return location, Si
 
     # read in the input data 
-    c_pos, Si = read_data_file(vertex_data_fp)
+    c_pos, Si = utils.read_data_file(vertex_data_fp)
     c_pos = np.array(c_pos)
     Si = np.array(Si)
     

@@ -14,6 +14,8 @@ import pickle
 import argparse
 import time
 
+import utils
+
 def main(vertex_data_fp, hotel_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, timeout, result_fp):
     """
     MIP planner script for planning UAV flight paths in the presence of multiple charging stations.
@@ -53,37 +55,10 @@ def main(vertex_data_fp, hotel_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, tim
     # Start timing here
     start_time = time.time()
 
-    def read_data_file(input_fp):
-        """
-        Reads input data file and extracts vertex locations and scores.
-        Assumes the file contains 'x y Si' data where:
-            x  = x coordinate
-            y  = y coordinate
-            Si = score
-
-        Returns:
-            location (list): List of (x, y) coordinates.
-            Si (list): List of corresponding scores.
-        """
-        if not os.path.exists(input_fp):
-            raise FileNotFoundError(f"Input file '{input_fp}' not found.")
-
-        location = []
-        Si = []
-
-        with open(input_fp, 'r') as file:
-            next(file)  # Skip the first line (header)
-            for line in file:
-                values = list(map(float, line.split()))
-                x, y, score = values[-3], values[-2], values[-1]
-                location.append([x, y])
-                Si.append(score)
-
-        return location, Si
 
     # read in the input data 
-    c_pos_hotel, Si_hotel = read_data_file(hotel_fp)
-    c_pos, Si = read_data_file(vertex_data_fp)
+    c_pos_hotel, Si_hotel = utils.read_data_file(hotel_fp)
+    c_pos, Si = utils.read_data_file(vertex_data_fp)
 
     c_pos = c_pos_hotel + c_pos
     Si = Si_hotel + Si
