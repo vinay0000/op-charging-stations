@@ -17,9 +17,6 @@ def main(vertex_data_fp, H, hotel_fp, algo='kmeans', random_state=0):
         algo (str): Specify the algorithm to be implemented for generating the hotels. Can be either 'kmeans' or 'random_uniform'.
         random_state (int or None): Integer to control the seeding to the kmeans algorithm. When an integer value is supplied, it allows for deterministic results from the k-means.
     """
-
-
-
     # read in the input data 
     c_pos, Si = utils.read_data_file(vertex_data_fp)
     c_pos = np.array(c_pos)

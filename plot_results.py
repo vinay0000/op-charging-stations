@@ -69,7 +69,7 @@ def plot_on_cartesian(H, N, D, c_pos, Si, transitions):
     Plot the solution on a 2D map with hotels and vertices.
     """
     # Initialize the figure
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots()
 
     # Separate hotels and vertices
     hotels = c_pos[:H]
@@ -85,14 +85,17 @@ def plot_on_cartesian(H, N, D, c_pos, Si, transitions):
     plt.scatter(y_h, x_h, color='orange', s=50, marker='o', label='Hotel')
     plt.scatter(y_v, x_v, color='black', s=30 * Si[H:], marker='s', label='Vertex')
 
-    plt.xlabel("X [meters]", fontsize=14)
-    plt.ylabel("Y [meters]", fontsize=14)
+    plt.xlabel("X [meters]")
+    plt.ylabel("Y [meters]")
     plt.tick_params(axis='both', which='major', labelsize=10)
 
     # Define trip colors
     colors = [
         'black', 'red', 'green', 'blue', 'brown', 'cyan', 'magenta', 'orange', 'purple', 
-        'yellow', 'pink', 'lime', 'teal', 'navy', 'maroon', 'olive', 'grey', 'gold', 'silver'
+        'yellow', 'pink', 'lime', 'teal', 'navy', 'maroon', 'olive', 'grey', 'gold', 'silver',
+        'indigo', 'violet', 'turquoise', 'salmon', 'coral', 'plum', 'orchid', 'tan', 
+        'chartreuse', 'crimson', 'darkgreen', 'darkblue', 'khaki', 'sienna', 'peru', 
+        'seagreen', 'tomato', 'lavender', 'slateblue', 'darkcyan', 'royalblue'
     ]
 
     # Plot transitions between hotels and vertices for each trip
@@ -158,9 +161,9 @@ def plot_on_map(H, N, D, c_pos, Si, transitions, x_min = -328363.62514082727, y_
     # Define the bounding box for the region of interest (xmin, ymin, xmax, ymax)
     bbox = box(minx=-103.5, miny=31, maxx=-103.2, maxy=31.25)
     river_map = river_map[river_map.intersects(bbox)] # Clip the river map to the bounding box
-
+    
     ### Plotting the solution ###
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots()
 
     # Plot the river map
     river_map.plot(ax=ax, color='blue', linewidth=0.5, alpha=0.7)
@@ -190,8 +193,8 @@ def plot_on_map(H, N, D, c_pos, Si, transitions, x_min = -328363.62514082727, y_
     plt.scatter(lon_h, lat_h, color='orange', s=50, marker='o', label='Hotel') 
     plt.scatter(lon_n, lat_n, color='black', s=30*Si[H:], marker='s', label='Vertex')
     
-    plt.xlabel("Longitude [degrees]", fontsize=14)
-    plt.ylabel("Latitude [degrees]", fontsize=14)
+    plt.xlabel("Longitude [degrees]")
+    plt.ylabel("Latitude [degrees]")
     # Set x and y-axis tick label size
     plt.tick_params(axis='both', which='major', labelsize=10)
     plt.tick_params(axis='both', which='minor', labelsize=10)
@@ -199,7 +202,10 @@ def plot_on_map(H, N, D, c_pos, Si, transitions, x_min = -328363.62514082727, y_
     # Draw lines between vertices, hotels according to transitions
     colors = [
         'black', 'red', 'green', 'blue', 'brown', 'cyan', 'magenta', 'orange', 'purple', 
-        'yellow', 'pink', 'lime', 'teal', 'navy', 'maroon', 'olive', 'grey', 'gold', 'silver'
+        'yellow', 'pink', 'lime', 'teal', 'navy', 'maroon', 'olive', 'grey', 'gold', 'silver',
+        'indigo', 'violet', 'turquoise', 'salmon', 'coral', 'plum', 'orchid', 'tan', 
+        'chartreuse', 'crimson', 'darkgreen', 'darkblue', 'khaki', 'sienna', 'peru', 
+        'seagreen', 'tomato', 'lavender', 'slateblue', 'darkcyan', 'royalblue'
     ]  # Colors for different trips
 
     for d in range(D):
@@ -214,8 +220,8 @@ def plot_on_map(H, N, D, c_pos, Si, transitions, x_min = -328363.62514082727, y_
                     plt.plot([lon1, lon2], [lat1, lat2], color=colors[d])
                     
                     # Adding labels to the points.
-                    plt.text(lon1, lat1, f'{i}', fontsize=12, ha='right')
-                    plt.text(lat2, lat2, f'{j}', fontsize=12, ha='right')
+                    plt.text(lon1, lat1, f'{i}', fontsize=10, ha='right')
+                    plt.text(lat2, lat2, f'{j}', fontsize=10, ha='right')
     # Show the plot                 
     plt.show()
 

@@ -6,9 +6,9 @@ import subprocess
 
 import matplotlib.pyplot as plt
 plt.rcParams.update({
-    'font.size': 10,           # Set font size to 10
-    'font.family': 'serif',    # Use serif fonts
-    'font.serif': ['Times New Roman']  # Set font to Times New Roman
+    'font.size': 10,           
+    'font.family': 'serif',    
+    'font.serif': ['Times New Roman']
 })
 figure_format = 'pdf'
 
