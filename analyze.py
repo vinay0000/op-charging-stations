@@ -7,13 +7,16 @@ import numpy as np
 
 import utils
 
+# List of colors to cycle through
+colors = ['blue', 'orange', 'green', 'purple', 'pink']
 
 file_dir = os.path.dirname(os.path.abspath(__file__))
-result_dir = os.path.join(file_dir, f'results')
+result_dir = os.path.join(file_dir, f'results_set0')
 
 # (re)make plot directory
 plot_dir = os.path.join(result_dir, f'plots')
 utils.create_directory(plot_dir)
+
 
 T_Max = 28800  # [seconds] = 8 hrs total tour length
 T_CH = 1800  # [seconds] = 30 min maximum flight time on full-charge
@@ -30,9 +33,10 @@ science_case_list = [('Bioassessment_24_scival', 24), ('Bioassessment_50_scival'
                         ('RivNetworkContinuity_24_scival',24), ('RivNetworkContinuity_50_scival',50), ('RivNetworkContinuity_103_scival',103)]
 
 
-D_range = range(1,20) # number of trips
+D_range = range(1,27) # number of trips
 H_range = range(2,7) # number of hotels
 
+#science_case_list = [('Bioassessment_24_scival', 24)]
 
 # search the 'results' folder for available results and consolidate all of them into a pandas dataframe
 df = pd.DataFrame()
@@ -111,19 +115,19 @@ for case in unique_cases:
     ax2 = ax1.twinx()
 
     # Create a plot for each unique value of H
-    for h_value in case_df['H'].unique():
+    for i, h_value in enumerate(case_df['H'].unique()):
         h_df = case_df[case_df['H'] == h_value]
          # Plot optimal values on the primary y-axis (left)
-        ax1.plot(h_df['D'], h_df['optimal_value'], marker='o', markersize=3, label=f'H={h_value}')
+        ax1.plot(h_df['D'], h_df['optimal_value'], color=colors[i % len(colors)], marker='o', markersize=2, linewidth=1, label=f'H={h_value}')
         
         # Plot process time on the secondary y-axis (right)
-        ax2.plot(h_df['D'], h_df['process_time']/60, '--', marker='x', markersize=4, label=f'Process Time (H={h_value})')
+        ax2.plot(h_df['D'], h_df['process_time']/60, ':', color=colors[i % len(colors)], marker='x', markersize=3, linewidth=1, label=f'Process Time (H={h_value})')
             
     # Label axes and title
     #ax1.set_title(f'{case_label}')
     sum_of_scores = sum(np.array(h_df['Si'].iloc[0]))
     ax1.axhline(y=sum_of_scores, color='r', linestyle='-', linewidth=1) # Add a horizontal line at the maximum possible Score
-    ax1.text(x=0.35, y=sum_of_scores - 1,  # Position slightly below the line
+    ax1.text(x=0.15, y=sum_of_scores - 1,  # Position slightly below the line
          s=f'{sum_of_scores:.2f}',  # Text content
          color='r', fontsize=10, ha='center', va='bottom', 
          transform=ax1.get_yaxis_transform())  # Relative to y-axis position
@@ -139,8 +143,7 @@ for case in unique_cases:
     # Handle legends for each axis separately
     lines_1, labels_1 = ax1.get_legend_handles_labels()
     lines_2, labels_2 = ax2.get_legend_handles_labels()
-    # ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left')
-    ax1.legend(lines_1, labels_1, loc='upper left')
+    ax1.legend(lines_1, labels_1, loc='center right')
 
 
     # Set grid and layout adjustments
@@ -154,13 +157,15 @@ for case in unique_cases:
 
     # Create a plot for the sum of halt_times vs D
     utils.plt.figure(figsize=(4, 3))
-    for h_value in case_df['H'].unique():
+    for i, h_value in enumerate(case_df['H'].unique()):
         h_df = case_df[case_df['H'] == h_value]
         # Sum the arrays in halt_times for each row and store the results
         halt_time_sums = 1/60 * h_df['halt_times'].apply(lambda x: np.sum(x))  # Sum each array
-        utils.plt.plot(h_df['D'], halt_time_sums, label=f'H={h_value}', marker='x')
+        utils.plt.plot(h_df['D'], halt_time_sums, label=f'H={h_value}', color=colors[i % len(colors)], linewidth=1, marker='x', markersize=3)
     
     #utils.plt.title(f'{case_label}')
+    #utils.plt.ylim([210, 230])
+    #utils.plt.xlim([8, 24])
     utils.plt.xlabel('D (Number of Trips)')
     utils.plt.ylabel('Total Charging Time [minutes]')
     utils.plt.legend()
@@ -172,12 +177,12 @@ for case in unique_cases:
     utils.plt.close()
 
     # Create a plot for the total tour time vs D
-    utils.plt.figure(figsize=(4, 3))
-    for h_value in case_df['H'].unique():
+    utils.plt.figure(figsize=(5, 3))
+    for i, h_value in enumerate(case_df['H'].unique()):
         h_df = case_df[case_df['H'] == h_value]
         # Sum the arrays in halt_times for each row and store the results
         tour_time = 1/60 * (h_df['flight_times'].apply(lambda x: np.sum(x)) +  h_df['halt_times'].apply(lambda x: np.sum(x)))  # Sum each array
-        utils.plt.plot(h_df['D'], tour_time, label=f'H={h_value}', marker='x')  # Use scatter for clearer visualization
+        utils.plt.plot(h_df['D'], tour_time, label=f'H={h_value}', color=colors[i % len(colors)], linewidth=1, marker='x', markersize=3)  # Use scatter for clearer visualization
     
     max_tour_time = h_df['T_Max'].iloc[0]/60 # maximum tour time in minutes
     utils.plt.axhline(y=max_tour_time, color='r', linestyle='--', linewidth=1) # Add a horizontal line at maximum possible tour time
@@ -186,6 +191,8 @@ for case in unique_cases:
             color='r', fontsize=10, ha='center', va='bottom')  # Anchor relative to axis
     
     #utils.plt.title(f'{case_label}')
+    #utils.plt.ylim([460, 490])
+    #utils.plt.xlim([8, 24])
     utils.plt.xlabel('D (Number of Trips)')
     utils.plt.ylabel('Tour Time [minutes]')
     utils.plt.legend()
@@ -195,6 +202,8 @@ for case in unique_cases:
     plot_fp = os.path.join(plot_dir, f'{case}_tour_time_vs_D.{utils.figure_format}')
     utils.plt.savefig(plot_fp, format=utils.figure_format)
     utils.plt.close()
+
+    
 
 
 #### DEBUG: To verify that the hotels generated by K-means is the same and in the same order across all cases. Simultaneously the vertex position data is also verified. ####

@@ -114,7 +114,7 @@ def main(vertex_data_fp, hotel_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, tim
     # Halt time at the end of trip d
     t_H = [m.addVar(vtype=GRB.CONTINUOUS, lb=0, ub=T_Max) for d in range(0, D)]
 
-    # subtour elimination variable
+    # subtour elimination variable TODO: Restrict the upper rbound of u
     u = [m.addVar(vtype=GRB.INTEGER, lb=0) for i in range(0, N)]
 
 
@@ -156,13 +156,13 @@ def main(vertex_data_fp, hotel_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, tim
         for k in range(H, H+N):
             m.addConstr(gp.quicksum(x[i][k][d] for i in range(0, H+N)) - gp.quicksum(x[k][j][d] for j in range(0, H+N)) == 0) 
 
-    # limit the same vertex-to-hotel and same vertex-to-vertex transitions to atmost 1.
-    # The same hotel-to-vertex and same hotel-to-hotel transitions are *not* limited. But self-tours (same hotel-to-hotel transitions) are disallowed by a previous constraint.
+    # limit the vertex-to-hotel and vertex-to-vertex transitions to atmost 1.
+    # The hotel-to-vertex and hotel-to-hotel transitions are *not* limited. But self-tours (same hotel-to-hotel transitions) are disallowed by a previous constraint.
     for i in range(H, H+N):
         m.addConstr(gp.quicksum(x[i][j][d]  for d in range(0, D) for j in range(0, H+N)) <=1) 
 
     # new condition to help convergence
-    # restrict same hotel-to-vertex transitions to atmost 1.
+    # restrict hotel-to-vertex transitions to atmost 1.
     for j in range(H, H+N):
         m.addConstr(gp.quicksum(x[i][j][d]  for d in range(0, D) for i in range(0, H)) <=1)     
 
@@ -189,6 +189,7 @@ def main(vertex_data_fp, hotel_fp, N, H, D, T_Max, T_CH, uav_s, k_ch, k_dis, tim
         m.addConstr(k_ch*t_H[d] <= T_CH - (t_M[d] - k_dis*t_F[d]))
 
     # new condition to help convergence
+    # if the trip is a hotel-to-hotel transition, there are no vertex-to-vertex transitions
     #M= 10000000
     M = N*(N-1)/2
     for d in range(0, D):

@@ -37,20 +37,18 @@ science_case_list = [('Bioassessment_24_scival', 24), ('Bioassessment_50_scival'
 
 science_case_list = [ ('Bioassessment_24_scival',24), ('Fracking_24_scival',24), ('Plume_24_scival',24), ('RivNetworkContinuity_24_scival',24)
                         ]
-
-
-#science_case_list = [('Plume_50_scival',50), ('Plume_103_scival',103)]
                       
 T_Max = 28800  # [seconds] = 8 hrs total tour length
 T_CH = 1800  # [seconds] = 30 min maximum flight time on full-charge
 uav_s = 7 # speed of UAV [m/s]
 k_ch = 1 # charging factor
 k_dis = 1 # discharge factor
-timeout = -1 # timeout in seconds. Enter negative number if optimal value is desired.
+timeout = -1 # timeout in seconds. Enter negative number if optimal value is desired, no matter the time taken.
 
 
-D_range = range(1,25)
-H_range = range(2,6)
+D_range = range(24,28)
+H_range = range(6,7)
+
 
 for sci_idx, science_case in enumerate(science_case_list):
 
